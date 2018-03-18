@@ -40,6 +40,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ContainerCollectionBuilder.cs" />
+    <Compile Include="TestHelper\CustomException.cs" />
+    <Compile Include="TestHelper\CustomErrorCode.cs" />
     <Compile Include="DataModels\Container.cs" />
     <Compile Include="DataModels\Containers.cs" />
     <Compile Include="DataModels\Matrix.cs" />
@@ -49,7 +51,6 @@
     <Compile Include="Points\OneDimensionPoint.cs" />
     <Compile Include="DataModels\Position.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Testing.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
