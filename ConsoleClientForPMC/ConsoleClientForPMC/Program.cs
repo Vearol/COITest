@@ -65,7 +65,7 @@ namespace ConsoleClientForPMC
                 foreach (var matrix in insideContainer.Matrices)
                 {
                     Console.WriteLine("Pathing Matrix");
-
+                    
                     foreach (var position in matrix.Positions)
                     {
                         Console.WriteLine("Pathing position");

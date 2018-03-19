@@ -21,6 +21,11 @@ namespace PMC.DataModels.DataModels
             get { return _positions; }
         }
 
+        public Position<T> this[int i]
+        {
+            get { return _positions[i]; }
+        }
+
         public Dimension Dimension
         {
             get { return _positions.First().Dimension; }

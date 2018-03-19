@@ -1,3 +1,5 @@
+using System;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PMC.DataModels.DataModels;
@@ -9,7 +11,7 @@ namespace PMC.DataModels.Tests
     public class ContainersValidationTest
     {
         [TestMethod]
-        public void NumberOfMatricesTest()
+        public void NumberOfMatricesIsTheSameTest()
         {
             var simpleTestPoints1D = new int[] { 1, 2, 3, 4, 5};
             var testPoints1D = simpleTestPoints1D.Select(x => new Point<int>(x)).ToArray();
@@ -32,7 +34,7 @@ namespace PMC.DataModels.Tests
         }
 
         [TestMethod]
-        public void NumberOfPositionsTest()
+        public void NumberOfPositionsIsTheSameTest()
         {
             var simpleTestPoints1D = new int[] { 1, 2, 3, 4, 5 };
             var testPoints1D = simpleTestPoints1D.Select(x => new Point<int>(x)).ToArray();
@@ -55,7 +57,7 @@ namespace PMC.DataModels.Tests
         }
 
         [TestMethod]
-        public void MatricesTypesTest()
+        public void MatricesTypesAreSameTest()
         {
             var simpleTestPoints1D = new int[] { 1, 2, 3, 4, 5 };
 
@@ -84,7 +86,7 @@ namespace PMC.DataModels.Tests
         }
 
         [TestMethod]
-        public void NumberOf3DPointsTest()
+        public void NumberOf3DPointsStaysTheSameTest()
         {
             var simpleTestPoints3D1 = new int[] { 1, 2, 3, 4, 5 };
             var simpleTestPoints3D2 = new int[] { 1, 2, 3, 4, 5, 6, 7 };

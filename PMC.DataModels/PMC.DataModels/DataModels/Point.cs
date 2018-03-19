@@ -18,9 +18,9 @@
         
         public Point(T[] values) { m_Values = values; }
 
-        public Point(T x) : this(new T[] { x }) { }
-        public Point(T x, T y) : this(new T[] { x, y }) { }
-        public Point(T x, T y, T z) : this(new T[] { x, y, z }) { }
+        public Point(T x) : this(new T[1] { x }) { }
+        public Point(T x, T y) : this(new T[2] { x, y }) { }
+        public Point(T x, T y, T z) : this(new T[3] { x, y, z }) { }
 
         public Point(Point<T> point) : this(point.m_Values) { }
 

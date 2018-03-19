@@ -13,5 +13,10 @@
         {
             get { return _matrices; }
         }
+
+        public Matrix<T> this[int i]
+        {
+            get { return _matrices[i]; }
+        }
     }
 }

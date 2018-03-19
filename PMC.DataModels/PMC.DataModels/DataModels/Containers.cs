@@ -27,6 +27,11 @@ namespace PMC.DataModels.DataModels
             }
         }
 
+        public Container<T> this[int i]
+        {
+            get { return _containers[i]; }
+        }
+
         public static void Validate(Container<T>[] containers)
         {
             if (containers.Length == 0) return;
