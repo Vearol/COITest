@@ -1,50 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using PMC.DataModels.Points;
 
 namespace PMC.DataModels.DataModels
 {
-    public interface IMatrix<T>
+    public class Matrix<T> : IDimension
     {
-        short PositionCount { get; }
-        Type DimensionType { get; }
-        List<int> DataPointCounts { get; }
-        bool Is3D { get; }
-    }
+        private readonly Position<T>[] _positions;
 
-    public class Matrix<T, TD> : IMatrix<T> where TD : Point<T>
-    {
-        private List<Position<T, TD>> _positions;
-
-        public Matrix(List<Position<T, TD>> positions)
+        public Matrix(Position<T>[] positions)
         {
-            _positions = positions;
+            _positions = new Position<T>[positions.Length];
+            for (var i = 0; i < positions.Length; i++)
+            {
+                _positions[i] = positions[i];
+            }
         }
 
-        public List<Position<T, TD>> Positions
+        public Position<T>[] Positions
         {
             get { return _positions; }
         }
 
+        public Dimension Dimension
+        {
+            get { return _positions.First().Dimension; }
+        }
+
         public short PositionCount
         {
-            get { return (short) _positions.Count; }
+            get { return (short) _positions.Length; }
         }
-
-        public Type DimensionType
+        
+        public IEnumerable<int> DataPointCounts
         {
-            get { return typeof(TD); }
-        }
-
-        public List<int> DataPointCounts
-        {
-            get { return _positions.Select(x => x.Points.Count).ToList(); }
+            get { return _positions.Select(x => x.Points.Length); }
         }
 
         public bool Is3D
         {
-            get { return typeof(TD).ToString().Contains("Three"); }
+            get { return Dimension == Dimension.D3; }
         }
     }
 }

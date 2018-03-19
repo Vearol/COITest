@@ -1,17 +1,15 @@
-﻿using System.Collections.Generic;
-
-namespace PMC.DataModels.DataModels
+﻿namespace PMC.DataModels.DataModels
 {
     public class Container<T>
     {
-        private List<IMatrix<T>> _matrices;
+        private readonly Matrix<T>[] _matrices;
 
-        public Container(List<IMatrix<T>> matrices)
+        public Container(Matrix<T>[] matrices)
         {
             _matrices = matrices;
         }
         
-        public List<IMatrix<T>> Matrices
+        public Matrix<T>[] Matrices
         {
             get { return _matrices; }
         }

@@ -45,10 +45,7 @@
     <Compile Include="DataModels\Container.cs" />
     <Compile Include="DataModels\Containers.cs" />
     <Compile Include="DataModels\Matrix.cs" />
-    <Compile Include="Points\Point.cs" />
-    <Compile Include="Points\ThreeDimensionPoint.cs" />
-    <Compile Include="Points\TwoDimensionPoint .cs" />
-    <Compile Include="Points\OneDimensionPoint.cs" />
+    <Compile Include="DataModels\Point.cs" />
     <Compile Include="DataModels\Position.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

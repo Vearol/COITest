@@ -1,20 +1,35 @@
-﻿using System.Collections.Generic;
-using PMC.DataModels.Points;
-
-namespace PMC.DataModels.DataModels
+﻿namespace PMC.DataModels.DataModels
 {
-    public class Position<T, TD> where TD : Point<T>
+    public class Position<T> : IDimension
     {
-        private List<TD> _points;
+        private readonly Point<T>[] _points;
 
-        public Position(List<TD> points)
+        public Position(Point<T>[] points, Dimension pointDim)
         {
-            _points = points;
+            Dimension = pointDim;
+            _points = new Point<T>[points.Length];
+
+            for (var i = 0; i < _points.Length; i++)
+            {
+                _points[i] = new Point<T>(points[i]);
+            }
         }
 
-        public List<TD> Points
+        public Position(Dimension pointDim)
+        {
+            Dimension = pointDim;
+        }
+
+        public Point<T>[] Points
         {
             get { return _points; }
         }
+
+        public Point<T> this[int i]
+        {
+            get { return _points[i]; }
+        }
+
+        public Dimension Dimension { get; }
     }
 }
