@@ -39,8 +39,8 @@ namespace PMC.DataModels.Tests
             for (var i = 0; i < positionArraySize; i++)
             {
                 testPositions1D[i] = new Position<int>(testPoints1D, Dimension.D1);
-                testPositions2D[i] = new Position<int>(testPoints1D, Dimension.D2);
-                testPositions3D[i] = new Position<int>(testPoints1D, Dimension.D3);
+                testPositions2D[i] = new Position<int>(testPoints2D, Dimension.D2);
+                testPositions3D[i] = new Position<int>(testPoints3D, Dimension.D3);
             }
 
             const int matrixArraySize = 60;

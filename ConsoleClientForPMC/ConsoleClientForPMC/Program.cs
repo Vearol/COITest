@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ConsoleClientForPMC.DatabaseStorage;
+using ConsoleClientForPMC.DatabaseStorage.Services.PointService;
 using PMC.DataModels;
 using PMC.DataModels.DataModels;
 
@@ -25,9 +27,27 @@ namespace ConsoleClientForPMC
 
         static void Main(string[] args)
         {
-            var simplePoints1D = new int[] { 1,4,5,23,58,3,5,4,12,16,84,36,89,34,26,89,4,24,64,75 };
+            //Test();
+            using (var newDbConnection = PMCConnection.Create())
+            {
+                //PMCDatabaseInstantiator.Init(newDbConnection, "PMCDB");
 
-            var positionList = new List<Position<int>>{Capacity = 10};
+                Console.WriteLine("Database init done.");
+
+                newDbConnection.Open();
+                IntPointService.Create(newDbConnection, 3, 3, 4, 5);
+                newDbConnection.Close();
+            }
+
+
+            Console.ReadLine();
+        }
+
+        private static void Test()
+        {
+            var simplePoints1D = new int[] { 1, 4, 5, 23, 58, 3, 5, 4, 12, 16, 84, 36, 89, 34, 26, 89, 4, 24, 64, 75 };
+
+            var positionList = new List<Position<int>> { Capacity = 10 };
             var positionList2D = new List<Position<int>> { Capacity = 10 };
             for (var i = 0; i < 10; i++)
             {
@@ -50,14 +70,14 @@ namespace ConsoleClientForPMC
             var matrix1D3 = new Matrix<int>(positionArray2D);
             var matrix1D4 = new Matrix<int>(positionArray2D);
 
-            var matrixList = new Matrix<int>[] {matrix1D1, matrix1D2, matrix1D3, matrix1D4};
+            var matrixList = new Matrix<int>[] { matrix1D1, matrix1D2, matrix1D3, matrix1D4 };
 
             var container = new Container<int>(matrixList);
 
             ContainerCollectionBuilder<int> builder = new IntContainers();
             var containerList = builder.Create();
 
-            containerList.ContainerList = new Container<int>[] {container};
+            containerList.ContainerList = new Container<int>[] { container };
 
             foreach (var insideContainer in containerList.ContainerList)
             {
@@ -65,7 +85,7 @@ namespace ConsoleClientForPMC
                 foreach (var matrix in insideContainer.Matrices)
                 {
                     Console.WriteLine("Pathing Matrix");
-                    
+
                     foreach (var position in matrix.Positions)
                     {
                         Console.WriteLine("Pathing position");
@@ -77,8 +97,6 @@ namespace ConsoleClientForPMC
                     }
                 }
             }
-
-            Console.ReadLine();
         }
     }
 }
