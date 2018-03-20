@@ -7,47 +7,49 @@ namespace ConsoleClientForPMC.DatabaseStorage
     {
         public static void Init(NpgsqlConnection connection, string dbName)
         {
-            connection.Open();
-            using (connection)
+            var sqlCreateDbQuery = $"CREATE DATABASE \"{dbName}\" " +
+                                   "WITH OWNER = \"postgres\" " +
+                                   "TEMPLATE = \"template0\" " +
+                                   "ENCODING = 'UTF8' " +
+                                   "CONNECTION LIMIT = -1;";
+
+            if (!CheckDatabaseExists(connection, dbName))
             {
-                var sqlCreateDbQuery = $"CREATE DATABASE \"{dbName}\" " +
-                                        "WITH OWNER = \"postgres\" " +
-                                        "TEMPLATE = \"template0\" " +
-                                        "ENCODING = 'UTF8' " +
-                                        "CONNECTION LIMIT = -1;";
+                Console.WriteLine("Database doesn't exist");
 
-                if (!CheckDatabaseExists(connection, dbName))
+                using (var cmd = new NpgsqlCommand(sqlCreateDbQuery, connection))
                 {
-                    Console.WriteLine("Database doesn't exist");
-
-                    using (var cmd = new NpgsqlCommand(sqlCreateDbQuery, connection))
-                    {
-                        cmd.ExecuteNonQuery();
-                        connection.Close();
-                    }
+                    cmd.ExecuteNonQuery();
                 }
             }
 
-            using (var newDbConnection = PMCConnection.Create())
-            {
-                newDbConnection.Open();
-                if (!CheckTableExists(newDbConnection, "points"))
-                    CreatePointsTable(newDbConnection);
-                
-                if (!CheckTableExists(newDbConnection, "positions"))
-                    CreatePositionsTable(newDbConnection);
+            if (!CheckTableExists(connection, "points"))
+                CreatePointsTable(connection);
 
-                if (!CheckTableExists(newDbConnection, "matrices"))
-                    CreateMatricesTable(newDbConnection);
+            if (!CheckTableExists(connection, "positions"))
+                CreatePositionsTable(connection);
 
-                if (!CheckTableExists(newDbConnection, "containers"))
-                    CreateContainersTable(newDbConnection);
+            if (!CheckTableExists(connection, "positionpoints"))
+                CreatePositionPointsTable(connection);
 
-                if (!CheckTableExists(newDbConnection, "containercollections"))
-                    CreateContainerCollectionsTable(newDbConnection);
+            if (!CheckTableExists(connection, "matrices"))
+                CreateMatricesTable(connection);
 
-                newDbConnection.Close();
-            }
+            if (!CheckTableExists(connection, "matrixpositions"))
+                CreateMatrixPositionsTable(connection);
+
+            if (!CheckTableExists(connection, "containers"))
+                CreateContainersTable(connection);
+
+            if (!CheckTableExists(connection, "containermatrices"))
+                CreateContainerMatricesTable(connection);
+
+            if (!CheckTableExists(connection, "containercollections"))
+                CreateContainerCollectionsTable(connection);
+
+            if (!CheckTableExists(connection, "containercollectioncontainers"))
+                CreateContainerCollectionContainersTable(connection);
+
         }
 
         private static void CreatePointsTable(NpgsqlConnection connection)
@@ -56,9 +58,10 @@ namespace ConsoleClientForPMC.DatabaseStorage
             const string sqlCreateTableQuery = "CREATE TABLE Points (" +
                                                "Id SERIAL," +
                                                "Dimension SMALLINT," +
-                                               "X INT," +
-                                               "Y INT," +
-                                               "Z INT," +
+                                               "DataType SMALLINT," +
+                                               "X BYTEA," +
+                                               "Y BYTEA," +
+                                               "Z BYTEA," +
                                                "PRIMARY KEY(Id) );";
 
             using (var cmd = new NpgsqlCommand(sqlCreateTableQuery, connection))
@@ -66,26 +69,56 @@ namespace ConsoleClientForPMC.DatabaseStorage
                 cmd.ExecuteNonQuery();
             }
         }
+
         private static void CreatePositionsTable(NpgsqlConnection connection)
         {
             Console.WriteLine("Creating Positions table");
             const string sqlCreateTableQuery = "CREATE TABLE Positions (" +
                                                "Id SERIAL, " +
-                                               "PointId INT, " +
-                                               "PRIMARY KEY(Id, PointId));";
+                                               "DataType SMALLINT, " +
+                                               "PRIMARY KEY(Id));";
 
             using (var cmd = new NpgsqlCommand(sqlCreateTableQuery, connection))
             {
                 cmd.ExecuteNonQuery();
             }
         }
+
+        private static void CreatePositionPointsTable(NpgsqlConnection connection)
+        {
+            Console.WriteLine("Creating PositionPoints table");
+            const string sqlCreateTableQuery = "CREATE TABLE PositionPoints (" +
+                                               "PositionId SERIAL, " +
+                                               "PointId INT, " +
+                                               "PRIMARY KEY(PositionId, PointId));";
+
+            using (var cmd = new NpgsqlCommand(sqlCreateTableQuery, connection))
+            {
+                cmd.ExecuteNonQuery();
+            }
+        }
+
         private static void CreateMatricesTable(NpgsqlConnection connection)
         {
             Console.WriteLine("Creating Matrices table");
             const string sqlCreateTableQuery = "CREATE TABLE Matrices (" +
                                                "Id SERIAL," +
+                                               "DataType SMALLINT," +
+                                               "PRIMARY KEY(Id));";
+
+            using (var cmd = new NpgsqlCommand(sqlCreateTableQuery, connection))
+            {
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        private static void CreateMatrixPositionsTable(NpgsqlConnection connection)
+        {
+            Console.WriteLine("Creating MatrixPositions table");
+            const string sqlCreateTableQuery = "CREATE TABLE MatrixPositions (" +
+                                               "MatrixId SERIAL," +
                                                "PositionId INT," +
-                                               "PRIMARY KEY(Id, PositionId));";
+                                               "PRIMARY KEY(MatrixId, PositionId));";
 
             using (var cmd = new NpgsqlCommand(sqlCreateTableQuery, connection))
             {
@@ -97,21 +130,49 @@ namespace ConsoleClientForPMC.DatabaseStorage
             Console.WriteLine("Creating Containers table");
             const string sqlCreateTableQuery = "CREATE TABLE Containers (" +
                                                "Id SERIAL," +
-                                               "MatrixId INT," +
-                                               "PRIMARY KEY(Id, MatrixId));";
+                                               "DataType SMALLINT," +
+                                               "PRIMARY KEY(Id));";
 
             using (var cmd = new NpgsqlCommand(sqlCreateTableQuery, connection))
             {
                 cmd.ExecuteNonQuery();
             }
         }
+        private static void CreateContainerMatricesTable(NpgsqlConnection connection)
+        {
+            Console.WriteLine("Creating ContainerMatrices table");
+            const string sqlCreateTableQuery = "CREATE TABLE ContainerMatrices (" +
+                                               "ContainerId SERIAL," +
+                                               "MatrixId INT," +
+                                               "PRIMARY KEY(ContainerId, MatrixId));";
+
+            using (var cmd = new NpgsqlCommand(sqlCreateTableQuery, connection))
+            {
+                cmd.ExecuteNonQuery();
+            }
+        }
+
         private static void CreateContainerCollectionsTable(NpgsqlConnection connection)
         {
             Console.WriteLine("Creating ContainerCollections table");
             const string sqlCreateTableQuery = "CREATE TABLE ContainerCollections (" +
                                                "Id SERIAL," +
+                                               "DataType SMALLINT," +
+                                               "PRIMARY KEY(Id));";
+
+            using (var cmd = new NpgsqlCommand(sqlCreateTableQuery, connection))
+            {
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        private static void CreateContainerCollectionContainersTable(NpgsqlConnection connection)
+        {
+            Console.WriteLine("Creating ContainerCollectionContainers table");
+            const string sqlCreateTableQuery = "CREATE TABLE ContainerCollectionContainers (" +
+                                               "ContainerCollectionId SERIAL," +
                                                "ContainerId INT," +
-                                               "PRIMARY KEY(Id, ContainerId));";
+                                               "PRIMARY KEY(ContainerCollectionId, ContainerId));";
 
             using (var cmd = new NpgsqlCommand(sqlCreateTableQuery, connection))
             {

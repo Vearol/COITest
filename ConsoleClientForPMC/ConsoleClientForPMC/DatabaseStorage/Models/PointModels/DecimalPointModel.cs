@@ -4,17 +4,30 @@
     {
         public int Id { get; set; }
         public byte Dimension { get; set; }
-        public int X { get; set; }
-        public int Y { get; set; }
-        public int Z { get; set; }
+        public decimal X { get; set; }
+        public decimal Y { get; set; }
+        public decimal Z { get; set; }
 
-        public DecimalPointModel(int id, byte dimension, int x, int y, int z)
+        public DecimalPointModel(int id, byte dimension, decimal x, decimal y, decimal z)
         {
             Id = id;
             Dimension = dimension;
             X = x;
             Y = y;
             Z = z;
+        }
+
+        public override string ToString()
+        {
+            var coordinates = $"Point<Decimal> x: {X}";
+
+            if (Dimension == 2)
+                coordinates += $", y: {Y}";
+
+            if (Dimension == 3)
+                coordinates += $", y: {Y}, z: {Z}";
+
+            return coordinates;
         }
     }
 }

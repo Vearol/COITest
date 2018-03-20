@@ -62,8 +62,15 @@
     <Compile Include="DatabaseStorage\Models\PositionModel.cs" />
     <Compile Include="DatabaseStorage\PMC.Connection.cs" />
     <Compile Include="DatabaseStorage\PMCDatabaseInstantiator.cs" />
+    <Compile Include="DatabaseStorage\Services\PointService\DataType.cs" />
+    <Compile Include="DatabaseStorage\Services\PointService\DecimalPointService.cs" />
+    <Compile Include="DatabaseStorage\Services\PointService\DoublePointService.cs" />
     <Compile Include="DatabaseStorage\Services\PointService\IntPointService.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="DatabaseStorage\Services\ContainerService.cs" />
+    <Compile Include="DatabaseStorage\Services\ContainerCollectionService.cs" />
+    <Compile Include="DatabaseStorage\Services\MatrixService.cs" />
+    <Compile Include="DatabaseStorage\Services\PositionService.cs" />
+    <Compile Include="ConsoleClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

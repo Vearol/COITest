@@ -6,11 +6,11 @@ using PMC.DataModels.TestHelper;
 
 namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
 {
-    public class IntPointService
+    public class DoublePointService
     {
-        public static IntPointModel Find(NpgsqlConnection connection, int id)
+        public static DoublePointModel Find(NpgsqlConnection connection, int id)
         {
-            using (var cmd = new NpgsqlCommand($"SELECT * FROM Points WHERE Id = '{id}' LIMIT 1;", connection))
+            using (var cmd = new NpgsqlCommand($"SELECT * FROM ErrorLogs WHERE Id = '{id}' LIMIT 1;", connection))
             {
                 using (var reader = cmd.ExecuteReader())
                 {
@@ -19,10 +19,10 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
             }
         }
 
-        public static int Create(NpgsqlConnection connection, int x, int? y = null, int? z = null)
+        public static int Create(NpgsqlConnection connection, double x, double? y = null, double? z = null)
         {
             var dimension = 1;
-            var yValue = 0;
+            var yValue = 0.0;
 
             if (y.HasValue)
             {
@@ -30,7 +30,7 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
                 yValue = y.Value;
             }
 
-            var zValue = 0;
+            var zValue = 0.0;
 
             if (z.HasValue)
             {
@@ -39,7 +39,7 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
             }
 
             int id;
-            
+
             using (var command = new NpgsqlCommand("insert into points(dimension,datatype,x,y,z)" +
                                                  " values(:dimension,:datatype,:x,:y,:z) returning id;", connection))
             {
@@ -54,7 +54,7 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
                 dataTypeParameter.Direction = ParameterDirection.Input;
                 dataTypeParameter.DbType = DbType.Byte;
                 dataTypeParameter.ParameterName = ":datatype";
-                dataTypeParameter.Value = (byte)DataType.Int;
+                dataTypeParameter.Value = (byte)DataType.Double;
                 command.Parameters.Add(dataTypeParameter);
 
                 var xParameter = command.CreateParameter();
@@ -83,20 +83,21 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
 
             return id;
         }
-        
-        private static IntPointModel ReadTo(IDataRecord reader)
+
+        private static DoublePointModel ReadTo(IDataRecord reader)
         {
             var id = reader.GetInt32(0);
             var dimension = reader.GetInt16(1);
             var dataType = reader.GetInt16(2);
-            if (dataType != (byte) DataType.Int)
-                throw new CustomException($"Wrong Data Type. Int expected, got {(DataType)dataType}.", (byte)CustomErrorCode.WrongDataType);
+            if (dataType != (byte)DataType.Double)
+                throw new CustomException($"Wrong Data Type. Double expected, got {(DataType)dataType}.", (byte)CustomErrorCode.WrongDataType);
 
-            var x = BitConverter.ToInt32((byte[]) reader.GetValue(3), 0);
-            var y = BitConverter.ToInt32((byte[]) reader.GetValue(4), 0);
-            var z = BitConverter.ToInt32((byte[]) reader.GetValue(5), 0);
+            var x = BitConverter.ToDouble((byte[])reader.GetValue(3), 0);
+            var y = BitConverter.ToDouble((byte[])reader.GetValue(4), 0);
+            var z = BitConverter.ToDouble((byte[])reader.GetValue(5), 0);
 
-            var errorLogModel = new IntPointModel(id, (byte)dimension, x, y, z);
+            var errorLogModel = new DoublePointModel(id, (byte)dimension, x, y, z);
+
             return errorLogModel;
         }
     }

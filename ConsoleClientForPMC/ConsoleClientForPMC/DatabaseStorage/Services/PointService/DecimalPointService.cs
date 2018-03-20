@@ -1,16 +1,47 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using ConsoleClientForPMC.DatabaseStorage.Models.PointModels;
 using Npgsql;
 using PMC.DataModels.TestHelper;
 
 namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
 {
-    public class IntPointService
+    public class BitConverterExt
     {
-        public static IntPointModel Find(NpgsqlConnection connection, int id)
+        public static byte[] GetBytes(decimal dec)
         {
-            using (var cmd = new NpgsqlCommand($"SELECT * FROM Points WHERE Id = '{id}' LIMIT 1;", connection))
+            var bits = decimal.GetBits(dec);
+            var bytes = new List<byte>();
+            foreach (var i in bits)
+            {
+                bytes.AddRange(BitConverter.GetBytes(i));
+            }
+
+            return bytes.ToArray();
+        }
+
+        public static decimal ToDecimal(byte[] bytes)
+        {
+            if (bytes.Count() != 16)
+                throw new Exception("A decimal must be created from exactly 16 bytes");
+
+            var bits = new int[4];
+            for (var i = 0; i <= 15; i += 4)
+            {
+                bits[i / 4] = BitConverter.ToInt32(bytes, i);
+            }
+
+            return new decimal(bits);
+        }
+    }
+
+    public class DecimalPointService
+    {
+        public static DecimalPointModel Find(NpgsqlConnection connection, int id)
+        {
+            using (var cmd = new NpgsqlCommand($"SELECT * FROM  WHERE Id = '{id}' LIMIT 1;", connection))
             {
                 using (var reader = cmd.ExecuteReader())
                 {
@@ -19,10 +50,10 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
             }
         }
 
-        public static int Create(NpgsqlConnection connection, int x, int? y = null, int? z = null)
+        public static int Create(NpgsqlConnection connection, decimal x, decimal? y = null, decimal? z = null)
         {
             var dimension = 1;
-            var yValue = 0;
+            decimal yValue = 0;
 
             if (y.HasValue)
             {
@@ -30,7 +61,7 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
                 yValue = y.Value;
             }
 
-            var zValue = 0;
+            decimal zValue = 0;
 
             if (z.HasValue)
             {
@@ -39,7 +70,7 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
             }
 
             int id;
-            
+
             using (var command = new NpgsqlCommand("insert into points(dimension,datatype,x,y,z)" +
                                                  " values(:dimension,:datatype,:x,:y,:z) returning id;", connection))
             {
@@ -54,28 +85,28 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
                 dataTypeParameter.Direction = ParameterDirection.Input;
                 dataTypeParameter.DbType = DbType.Byte;
                 dataTypeParameter.ParameterName = ":datatype";
-                dataTypeParameter.Value = (byte)DataType.Int;
+                dataTypeParameter.Value = (byte)DataType.Decimal;
                 command.Parameters.Add(dataTypeParameter);
 
                 var xParameter = command.CreateParameter();
                 xParameter.Direction = ParameterDirection.Input;
-                xParameter.DbType = DbType.Binary;
+                xParameter.DbType = DbType.Decimal;
                 xParameter.ParameterName = ":x";
-                xParameter.Value = BitConverter.GetBytes(x);
+                xParameter.Value = BitConverterExt.GetBytes(x);
                 command.Parameters.Add(xParameter);
 
                 var yParameter = command.CreateParameter();
                 yParameter.Direction = ParameterDirection.Input;
-                yParameter.DbType = DbType.Binary;
+                yParameter.DbType = DbType.Decimal;
                 yParameter.ParameterName = ":y";
-                yParameter.Value = BitConverter.GetBytes(yValue);
+                yParameter.Value = BitConverterExt.GetBytes(yValue);
                 command.Parameters.Add(yParameter);
 
                 var zParameter = command.CreateParameter();
                 zParameter.Direction = ParameterDirection.Input;
-                zParameter.DbType = DbType.Binary;
+                zParameter.DbType = DbType.Decimal;
                 zParameter.ParameterName = ":z";
-                zParameter.Value = BitConverter.GetBytes(zValue);
+                zParameter.Value = BitConverterExt.GetBytes(zValue);
                 command.Parameters.Add(zParameter);
 
                 id = (int)command.ExecuteScalar();
@@ -83,20 +114,21 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
 
             return id;
         }
-        
-        private static IntPointModel ReadTo(IDataRecord reader)
+
+        private static DecimalPointModel ReadTo(IDataRecord reader)
         {
             var id = reader.GetInt32(0);
             var dimension = reader.GetInt16(1);
             var dataType = reader.GetInt16(2);
-            if (dataType != (byte) DataType.Int)
-                throw new CustomException($"Wrong Data Type. Int expected, got {(DataType)dataType}.", (byte)CustomErrorCode.WrongDataType);
+            if (dataType != (byte)DataType.Double)
+                throw new CustomException($"Wrong Data Type. Decimal expected, got {(DataType)dataType}.", (byte)CustomErrorCode.WrongDataType);
+            
+            var x = BitConverterExt.ToDecimal((byte[])reader.GetValue(3));
+            var y = BitConverterExt.ToDecimal((byte[])reader.GetValue(4));
+            var z = BitConverterExt.ToDecimal((byte[])reader.GetValue(5));
 
-            var x = BitConverter.ToInt32((byte[]) reader.GetValue(3), 0);
-            var y = BitConverter.ToInt32((byte[]) reader.GetValue(4), 0);
-            var z = BitConverter.ToInt32((byte[]) reader.GetValue(5), 0);
+            var errorLogModel = new DecimalPointModel(id, (byte)dimension, x, y, z);
 
-            var errorLogModel = new IntPointModel(id, (byte)dimension, x, y, z);
             return errorLogModel;
         }
     }

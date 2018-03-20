@@ -16,5 +16,18 @@
             Y = y;
             Z = z;
         }
+
+        public override string ToString()
+        {
+            var coordinates = $"Point<Int> x: {X}";
+
+            if (Dimension == 2)
+                coordinates += $", y: {Y}";
+
+            if (Dimension == 3)
+                coordinates += $", y: {Y}, z: {Z}";
+
+            return coordinates;
+        }
     }
 }
