@@ -1,22 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using PMC.DataModels.TestHelper;
 
 namespace PMC.DataModels.DataModels
 {
+    /// <summary>
+    /// Containers contains array of Container, which should be the same type as the Containers itself
+    /// </summary>
+    /// <typeparam name="T">Type of Containers</typeparam>
     public class Containers<T>
     {
         private Container<T>[] _containers;
 
+        /// <summary>
+        /// Empty constructor for factory method
+        /// </summary>
         public Containers() {}
 
+        /// <param name="containers">Array of Container</param>
         public Containers(Container<T>[] containers)
         {
+            Validate(containers);
+
             _containers = containers;
         }
 
-        public Container<T>[] ContainerList
+        /// <returns>Array of Container in current Containers</returns>
+        public Container<T>[] ContainerArray
         {
             get { return _containers; }
             set
@@ -27,11 +36,16 @@ namespace PMC.DataModels.DataModels
             }
         }
 
+        /// <returns>Returns Container with given index</returns>
         public Container<T> this[int i]
         {
             get { return _containers[i]; }
         }
 
+        /// <summary>
+        /// Some of validations acording to the rules
+        /// </summary>
+        /// /// <param name="containers">Array of Container that need check for valid data</param>
         public static void Validate(Container<T>[] containers)
         {
             if (containers.Length == 0) return;

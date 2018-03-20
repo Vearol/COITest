@@ -75,7 +75,7 @@ namespace PMC.DataModels.Tests
             ContainerCollectionBuilder<int> collectionsBuilder = new IntContainers();
             var containers = collectionsBuilder.Create();
 
-            containers.ContainerList = testContainers;
+            containers.ContainerArray = testContainers;
 
             for (var i = 0; i < 10; i++)
             {
