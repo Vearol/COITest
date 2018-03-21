@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Data;
-using ConsoleClientForPMC.DatabaseStorage.Models.PointModels;
+using ConsoleClientForPMC.DatabaseStorage.Models;
 using Npgsql;
 using PMC.DataModels.TestHelper;
 
@@ -8,13 +8,13 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
 {
     public class DoublePointService
     {
-        public static DoublePointModel Find(NpgsqlConnection connection, int id)
+        public static PointModel<double> Find(NpgsqlConnection connection, int id)
         {
             using (var cmd = new NpgsqlCommand($"SELECT * FROM ErrorLogs WHERE Id = '{id}' LIMIT 1;", connection))
             {
                 using (var reader = cmd.ExecuteReader())
                 {
-                    return reader.Read() ? ReadTo(reader) : null;
+                    return reader.Read() ? ReadModel(reader) : null;
                 }
             }
         }
@@ -84,7 +84,7 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
             return id;
         }
 
-        private static DoublePointModel ReadTo(IDataRecord reader)
+        private static PointModel<double> ReadModel(IDataRecord reader)
         {
             var id = reader.GetInt32(0);
             var dimension = reader.GetInt16(1);
@@ -96,7 +96,7 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
             var y = BitConverter.ToDouble((byte[])reader.GetValue(4), 0);
             var z = BitConverter.ToDouble((byte[])reader.GetValue(5), 0);
 
-            var errorLogModel = new DoublePointModel(id, (byte)dimension, x, y, z);
+            var errorLogModel = new PointModel<double>(id, (byte)dimension, x, y, z);
 
             return errorLogModel;
         }

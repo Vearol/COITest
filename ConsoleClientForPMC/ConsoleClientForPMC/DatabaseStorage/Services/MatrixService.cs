@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 using ConsoleClientForPMC.DatabaseStorage.Models;
 using Npgsql;
 
@@ -12,7 +13,31 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services
             {
                 using (var reader = cmd.ExecuteReader())
                 {
-                    return reader.Read() ? ReadTo(reader) : null;
+                    return reader.Read() ? ReadModel(reader) : null;
+                }
+            }
+        }
+
+        public static long Count(NpgsqlConnection connection)
+        {
+            using (var cmd = new NpgsqlCommand("SELECT COUNT(Id) FROM Matrices", connection))
+            {
+                return (long)cmd.ExecuteScalar();
+            }
+        }
+
+        public static List<MatrixPositionModel> Query(NpgsqlConnection connection, int matrixId)
+        {
+            using (var cmd = new NpgsqlCommand($"SELECT * FROM MatrixPositions WHERE matrixId = {matrixId};", connection))
+            {
+                using (var reader = cmd.ExecuteReader())
+                {
+                    var results = new List<MatrixPositionModel>();
+                    while (reader.Read())
+                    {
+                        results.Add(ReadMatrixPosition(reader));
+                    }
+                    return results;
                 }
             }
         }
@@ -60,12 +85,21 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services
             }
         }
 
-        private static MatrixModel ReadTo(IDataRecord reader)
+        private static MatrixModel ReadModel(IDataRecord reader)
         {
             var id = reader.GetInt32(0);
             var data = reader.GetInt16(1);
 
             var errorLogModel = new MatrixModel(id, (byte)data);
+            return errorLogModel;
+        }
+
+        private static MatrixPositionModel ReadMatrixPosition(IDataRecord reader)
+        {
+            var matrixId = reader.GetInt32(0);
+            var positionId = reader.GetInt32(1);
+
+            var errorLogModel = new MatrixPositionModel(matrixId, positionId);
             return errorLogModel;
         }
     }

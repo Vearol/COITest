@@ -48,9 +48,10 @@ namespace PMC.DataModels.DataModels
         /// /// <param name="containers">Array of Container that need check for valid data</param>
         public static void Validate(Container<T>[] containers)
         {
-            if (containers.Length == 0) return;
+            var firstContainer = containers.FirstOrDefault();
+            if (firstContainer == null) return;
 
-            var containerMatrixCount = containers[0].Matrices.Length;
+            var containerMatrixCount = firstContainer.Matrices.Length;
             var containerMatrixPositionCount = 0;
 
             foreach (var container in containers)

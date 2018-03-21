@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 using ConsoleClientForPMC.DatabaseStorage.Models;
 using Npgsql;
 
@@ -12,8 +13,32 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services
             {
                 using (var reader = cmd.ExecuteReader())
                 {
-                    return reader.Read() ? ReadTo(reader) : null;
+                    return reader.Read() ? ReadModel(reader) : null;
                 }
+            }
+        }
+
+        public static List<ContainerMatrixModel> Query(NpgsqlConnection connection, int containerId)
+        {
+            using (var cmd = new NpgsqlCommand($"SELECT * FROM ContainerMatrices WHERE containerId = {containerId};", connection))
+            {
+                using (var reader = cmd.ExecuteReader())
+                {
+                    var results = new List<ContainerMatrixModel>();
+                    while (reader.Read())
+                    {
+                        results.Add(ReadContainerMatrix(reader));
+                    }
+                    return results;
+                }
+            }
+        }
+
+        public static long Count(NpgsqlConnection connection)
+        {
+            using (var cmd = new NpgsqlCommand("SELECT COUNT(Id) FROM Containers", connection))
+            {
+                return (long)cmd.ExecuteScalar();
             }
         }
 
@@ -60,12 +85,21 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services
             }
         }
 
-        private static ContainerModel ReadTo(IDataRecord reader)
+        private static ContainerModel ReadModel(IDataRecord reader)
         {
             var id = reader.GetInt32(0);
             var data = reader.GetInt16(1);
 
             var errorLogModel = new ContainerModel(id, (byte)data);
+            return errorLogModel;
+        }
+
+        private static ContainerMatrixModel ReadContainerMatrix(IDataRecord reader)
+        {
+            var containerid = reader.GetInt32(0);
+            var matrixId = reader.GetInt32(1);
+
+            var errorLogModel = new ContainerMatrixModel(containerid, matrixId);
             return errorLogModel;
         }
     }

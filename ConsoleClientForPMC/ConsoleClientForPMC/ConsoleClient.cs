@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using ConsoleClientForPMC.DatabaseStorage;
 using ConsoleClientForPMC.DatabaseStorage.Services;
 using ConsoleClientForPMC.DatabaseStorage.Services.PointService;
 using Npgsql;
+using PMC.DataModels;
+using PMC.DataModels.DataModels;
 using PMC.DataModels.TestHelper;
 
 namespace ConsoleClientForPMC
@@ -15,43 +16,121 @@ namespace ConsoleClientForPMC
         private const int maxNumber = 100;
 
         private const int pointArraySize = 500;
-        private const int positionArraySize = 500;
+        private const int positionArraySize = 170;
         private const int matrixArraySize = 60;
         private const int containerArraySize = 1000;
 
-        private static void Shuffle<T>(this IList<T> list)
-        {
-            var n = list.Count;
-            while (n > 1)
-            {
-                n--;
-                var k = random.Next(n + 1);
-                var value = list[k];
-                list[k] = list[n];
-                list[n] = value;
-            }
-        }
+        private const int validCollectionContainerId = 1;
 
         static void Main(string[] args)
         {
-            using (var newDbConnection = PMCConnection.Create())
+            using (var connection = PMCConnection.Create())
             {
-                newDbConnection.Open();
-                PMCDatabaseInstantiator.Init(newDbConnection, "PMCDB");
+                connection.Open();
+                PMCDatabaseInstantiator.Init(connection, "PMCDB");
 
                 Console.WriteLine("Database init done.");
 
-                //TestWriteToDB(newDbConnection);
-                TestElementsFromDB(newDbConnection);
+                if (ContainerService.Count(connection) < containerArraySize ||
+                    MatrixService.Count(connection) < matrixArraySize ||
+                    PositionService.Count(connection) < positionArraySize ||
+                    PointService.Count(connection) < pointArraySize)
+                {
+                    WriteTestDataToDB(connection);
+                }
 
-                newDbConnection.Close();
+                TestElementsFromDB(connection);
+
+                var containers = LoadDataFromDbToModel(connection);
+
+                TestElementsFromPMCModel(containers);
+
+                Console.WriteLine("End");
+                connection.Close();
             }
 
 
             Console.ReadLine();
         }
-        
-        private static void TestWriteToDB(NpgsqlConnection connection)
+
+        private static Containers<int> LoadDataFromDbToModel(NpgsqlConnection connection)
+        {
+            Console.WriteLine("Loading data to Containers PMC Model");
+
+            var containerCollection = ContainerCollectionService.Find(connection, validCollectionContainerId);
+            var dataType = containerCollection.DataType;
+
+            var containerCollectionData = ContainerCollectionService.Query(connection, containerCollection.Id);
+
+            var pmsContainers = new Container<int>[containerCollectionData.Count];
+            
+            for (var i = 0; i < containerCollectionData.Count; i++)
+            {
+                if (i % 100 == 0 && i != 0)
+                    Console.WriteLine("Loaded {0} containers", i);
+
+                var containerModel = ContainerService.Find(connection, containerCollectionData[i].ContainerId);
+
+                if (containerModel.DataType != dataType)
+                    throw new CustomException("Containers has incorrect data type", (byte)CustomErrorCode.IncorrectDataTypeInContainers);
+
+                var containerMatrices = ContainerService.Query(connection, containerModel.Id);
+
+                var pmsMatrices = new Matrix<int>[containerMatrices.Count];
+                
+                for (var j = 0; j < containerMatrices.Count; j++)
+                {
+                    if (j % 10 == 0 && j != 0)
+                        Console.WriteLine("Loaded {0} matrices", j);
+                    
+                    var matrixModel = MatrixService.Find(connection, containerMatrices[j].MatrixId);
+                    if (matrixModel.DataType != dataType)
+                        throw new CustomException("Containers has incorrect data type", (byte)CustomErrorCode.IncorrectDataTypeInContainers);
+
+                    var matrixPositions = MatrixService.Query(connection, matrixModel.Id);
+
+                    var pmsPositions = new Position<int>[matrixPositions.Count];
+                    
+                    for (var k = 0; k < matrixPositions.Count; k++)
+                    {
+                        var positionModel = PositionService.Find(connection, matrixPositions[k].PositionId);
+                        if (positionModel.DataType != dataType)
+                            throw new CustomException("Containers has incorrect data type", (byte)CustomErrorCode.IncorrectDataTypeInContainers);
+
+                        var positionPoints = PositionService.Query(connection, positionModel.Id);
+
+                        var pmsPoints = new Point<int>[positionPoints.Count];
+
+                        var dimension = Dimension.D1;
+                        for (var s = 0; s < positionPoints.Count; s++)
+                        {
+                            var pointModel = IntPointService.Find(connection, positionPoints[s].PointId);
+                            if (pointModel == null)
+                                continue;
+                            var pointModelDimension = (Dimension)pointModel.Dimension;
+                            if (dimension != pointModelDimension)
+                                dimension = pointModelDimension;
+
+                            pmsPoints[s] = new Point<int>(pointModel.GetPointArray());
+                        }
+
+                        pmsPositions[k] = new Position<int>(pmsPoints, dimension);
+                    }
+
+                    pmsMatrices[j] = new Matrix<int>(pmsPositions);
+                }
+
+                pmsContainers[i] = new Container<int>(pmsMatrices);
+            }
+
+            ContainerCollectionBuilder<int> builder = new IntContainers();
+            var containers = builder.Create();
+
+            containers.ContainerArray = pmsContainers;
+            return containers;
+        }
+
+        private static void WriteTestDataToDB(NpgsqlConnection connection)
         {
             var pointIds1D = new int[pointArraySize];
             var pointIds2D = new int[pointArraySize];
@@ -159,12 +238,14 @@ namespace ConsoleClientForPMC
 
         private static void TestElementsFromDB(NpgsqlConnection connection)
         {
+            Console.WriteLine("Testing random data from database");
+
             for (var i = 0; i < 10; i++)
             {
-                var containerIndex = random.Next(0, containerArraySize);
-                var matrixIndex = random.Next(0, matrixArraySize);
-                var positionIndex = random.Next(0, positionArraySize);
-                var pointIndex = random.Next(0, pointArraySize);
+                var containerIndex = random.Next(1, containerArraySize);
+                var matrixIndex = random.Next(1, matrixArraySize);
+                var positionIndex = random.Next(1, positionArraySize);
+                var pointIndex = random.Next(1, pointArraySize);
 
                 var container = ContainerService.Find(connection, containerIndex);
                 var matrix = MatrixService.Find(connection, matrixIndex);
@@ -173,6 +254,21 @@ namespace ConsoleClientForPMC
 
                 if (container == null || matrix == null || position == null)
                     throw new CustomException("Can't find data in database.", (byte)CustomErrorCode.MissingDataInDatabase);
+
+                Console.WriteLine(point.ToString());
+            }
+        }
+
+        private static void TestElementsFromPMCModel<T>(Containers<T> containers)
+        {
+            for (var i = 0; i < 10; i++)
+            {
+                var containerIndex = random.Next(0, containerArraySize);
+                var matrixIndex = random.Next(0, matrixArraySize);
+                var positionIndex = random.Next(0, positionArraySize);
+                var pointIndex = random.Next(0, pointArraySize);
+
+                var point = containers[containerIndex][matrixIndex][positionIndex][pointIndex];
 
                 Console.WriteLine(point.ToString());
             }

@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using ConsoleClientForPMC.DatabaseStorage.Models.PointModels;
+using ConsoleClientForPMC.DatabaseStorage.Models;
 using Npgsql;
 using PMC.DataModels.TestHelper;
 
 namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
 {
-    public class BitConverterExt
+    public static class BitConverterExt
     {
         public static byte[] GetBytes(decimal dec)
         {
@@ -39,13 +39,13 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
 
     public class DecimalPointService
     {
-        public static DecimalPointModel Find(NpgsqlConnection connection, int id)
+        public static PointModel<decimal> Find(NpgsqlConnection connection, int id)
         {
-            using (var cmd = new NpgsqlCommand($"SELECT * FROM  WHERE Id = '{id}' LIMIT 1;", connection))
+            using (var cmd = new NpgsqlCommand($"SELECT * FROM Points WHERE Id = '{id}' LIMIT 1;", connection))
             {
                 using (var reader = cmd.ExecuteReader())
                 {
-                    return reader.Read() ? ReadTo(reader) : null;
+                    return reader.Read() ? ReadModel(reader) : null;
                 }
             }
         }
@@ -115,7 +115,7 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
             return id;
         }
 
-        private static DecimalPointModel ReadTo(IDataRecord reader)
+        private static PointModel<decimal> ReadModel(IDataRecord reader)
         {
             var id = reader.GetInt32(0);
             var dimension = reader.GetInt16(1);
@@ -127,7 +127,7 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
             var y = BitConverterExt.ToDecimal((byte[])reader.GetValue(4));
             var z = BitConverterExt.ToDecimal((byte[])reader.GetValue(5));
 
-            var errorLogModel = new DecimalPointModel(id, (byte)dimension, x, y, z);
+            var errorLogModel = new PointModel<decimal>(id, (byte)dimension, x, y, z);
 
             return errorLogModel;
         }

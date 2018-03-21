@@ -13,6 +13,7 @@
         MissingDataInDatabase = 5,
         IncorrectTypeOfSomePoints = 6,
         IncorrectTypeOfSomePositions = 7,
+        IncorrectDataTypeInContainers = 8,
     }
 }
     

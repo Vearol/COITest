@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 using ConsoleClientForPMC.DatabaseStorage.Models;
 using Npgsql;
 
@@ -12,7 +13,7 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services
             {
                 using (var reader = cmd.ExecuteReader())
                 {
-                    return reader.Read() ? ReadTo(reader) : null;
+                    return reader.Read() ? ReadModel(reader) : null;
                 }
             }
         }
@@ -35,6 +36,22 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services
             }
 
             return id;
+        }
+
+        public static List<ContainerCollectionContainerModel> Query(NpgsqlConnection connection, int containerCollectionId)
+        {
+            using (var cmd = new NpgsqlCommand($"SELECT * FROM ContainerCollectionContainers WHERE containerCollectionId = {containerCollectionId};", connection))
+            {
+                using (var reader = cmd.ExecuteReader())
+                {
+                    var results = new List<ContainerCollectionContainerModel>();
+                    while (reader.Read())
+                    {
+                        results.Add(ReadContainerCollectionContainer(reader));
+                    }
+                    return results;
+                }
+            }
         }
 
         public static void AddContainer(NpgsqlConnection connection, int containercollectionId, int containerId)
@@ -60,12 +77,21 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services
             }
         }
 
-        private static ContainerCollectionModel ReadTo(IDataRecord reader)
+        private static ContainerCollectionModel ReadModel(IDataRecord reader)
         {
             var id = reader.GetInt32(0);
             var data = reader.GetInt16(1);
 
             var errorLogModel = new ContainerCollectionModel(id, (byte)data);
+            return errorLogModel;
+        }
+
+        private static ContainerCollectionContainerModel ReadContainerCollectionContainer(IDataRecord reader)
+        {
+            var containerCollectionId = reader.GetInt32(0);
+            var containerId = reader.GetInt32(1);
+
+            var errorLogModel = new ContainerCollectionContainerModel(containerCollectionId, containerId);
             return errorLogModel;
         }
     }

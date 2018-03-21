@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Data;
-using ConsoleClientForPMC.DatabaseStorage.Models.PointModels;
+using ConsoleClientForPMC.DatabaseStorage.Models;
 using Npgsql;
 using PMC.DataModels.TestHelper;
 
 namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
 {
-    public class IntPointService
+    public static class IntPointService
     {
-        public static IntPointModel Find(NpgsqlConnection connection, int id)
+        public static PointModel<int> Find(NpgsqlConnection connection, int id)
         {
             using (var cmd = new NpgsqlCommand($"SELECT * FROM Points WHERE Id = '{id}' LIMIT 1;", connection))
             {
                 using (var reader = cmd.ExecuteReader())
                 {
-                    return reader.Read() ? ReadTo(reader) : null;
+                    return reader.Read() ? ReadModel(reader) : null;
                 }
             }
         }
@@ -84,7 +84,7 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
             return id;
         }
         
-        private static IntPointModel ReadTo(IDataRecord reader)
+        private static PointModel<int> ReadModel(IDataRecord reader)
         {
             var id = reader.GetInt32(0);
             var dimension = reader.GetInt16(1);
@@ -96,7 +96,7 @@ namespace ConsoleClientForPMC.DatabaseStorage.Services.PointService
             var y = BitConverter.ToInt32((byte[]) reader.GetValue(4), 0);
             var z = BitConverter.ToInt32((byte[]) reader.GetValue(5), 0);
 
-            var errorLogModel = new IntPointModel(id, (byte)dimension, x, y, z);
+            var errorLogModel = new PointModel<int>(id, (byte)dimension, x, y, z);
             return errorLogModel;
         }
     }

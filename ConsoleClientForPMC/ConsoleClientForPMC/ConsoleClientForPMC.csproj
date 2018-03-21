@@ -53,9 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DatabaseStorage\Models\PointModels\DoublePointModel.cs" />
-    <Compile Include="DatabaseStorage\Models\PointModels\DecimalPointModel.cs" />
-    <Compile Include="DatabaseStorage\Models\PointModels\IntPointModel.cs" />
+    <Compile Include="DatabaseStorage\Models\AbstractPoint.cs" />
     <Compile Include="DatabaseStorage\Models\ContainerModel.cs" />
     <Compile Include="DatabaseStorage\Models\ContainerCollectionModel.cs" />
     <Compile Include="DatabaseStorage\Models\MatrixModel.cs" />
@@ -69,6 +67,7 @@
     <Compile Include="DatabaseStorage\Services\ContainerService.cs" />
     <Compile Include="DatabaseStorage\Services\ContainerCollectionService.cs" />
     <Compile Include="DatabaseStorage\Services\MatrixService.cs" />
+    <Compile Include="DatabaseStorage\Services\PointService\PointService.cs" />
     <Compile Include="DatabaseStorage\Services\PositionService.cs" />
     <Compile Include="ConsoleClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
